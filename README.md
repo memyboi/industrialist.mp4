@@ -30,7 +30,8 @@ Now, runtime isn't great. It will take a VERY, VERY long time to render, and you
 Once it is done, find some program to concatenate all of the images in the "rendered" folder or something (preferrably ffmpeg, but i couldn't get ffmpeg to work)  
 Once that finished, you're done!  
   
-(PS: make sure to turn on DND, you will get notifications if your desktop sends a notification for each screenshot)
+(PS: make sure to turn on DND, you will get notifications if your desktop sends a notification for each screenshot)  
+(PS: you will need a lot of free space (eg. 20 gigs?), and ram to concatenate the video)
 
 ## Dependencies:
 - pyautogui
