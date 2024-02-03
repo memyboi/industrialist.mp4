@@ -1,0 +1,259 @@
+# do le macro
+# made in late jan 2024, whereas other files made in late november 2023
+# dont ask why i took so long
+# thats also why this code is "cleaner"
+
+# might work on windows, 
+# its made to work on linux (on wayland)
+# cuz thats the os i use lol
+# i use arch btw
+# idfk
+
+# this is awful code lmao
+# do not use this at all
+
+#      _                            _
+#     (_)_ __ ___  _ __   ___  _ __| |_ ___
+#     | | '_ ` _ \| '_ \ / _ \| '__| __/ __|
+#     | | | | | | | |_) | (_) | |  | |_\__ \
+#     |_|_| |_| |_| .__/ \___/|_|   \__|___/
+#                 |_|
+import pyautogui
+import pyscreenshot
+import os
+import sys
+from pynput import mouse
+from pynput import keyboard
+import time
+from PIL import Image
+import cv2
+import math
+sys.path.append("./real-hacks") # hax omg !11! cheetah !11!1!!1
+import doMath # jk its just math
+
+#                       __ _
+#       ___ ___  _ __  / _(_) __ _
+#      / __/ _ \| '_ \| |_| |/ _` |
+#     | (_| (_) | | | |  _| | (_| |
+#      \___\___/|_| |_|_| |_|\__, |
+#                            |___/
+screenshottingState = 0
+    # 0 - use pyscreenshot (linux (wayland, x11), osx, windows)
+    # 1 - use grimblast (linux wayland, grimblast needs to be installed),
+    # 2 - use pyautogui.screenshot(linux (x11 only), osx, windows)
+gui = True # enable/disable gui
+placespeed = 0.020 # how fast pipes are placed
+massremovepadding = 3 # how much padding to add to the mass delete feature
+output_folder = "./rendered" # where the images are placed after being rendered, may need changing on non unix (windows) platforms
+input_folder = "./processed" # input files, make sure it only consists of .jpg files numbered from 0-${frame count}, may need changing on non unix (windows) platforms
+intermission = 0 # number of seconds before playing starts, after initialisation.
+switch = 0
+    # 0 - place pipe when pixel is black, leave white pixels
+    # 1 - place pipe when pixel is white, leave black pixels
+
+#                       _   _
+#      _ __ _   _ _ __ | |_(_)_ __ ___   ___
+#     | '__| | | | '_ \| __| | '_ ` _ \ / _ \
+#     | |  | |_| | | | | |_| | | | | | |  __/
+#     |_|   \__,_|_| |_|\__|_|_| |_| |_|\___|
+
+clix = 0
+topLeft = []
+topRight = []
+bottomLeft = []
+bottomRight = []
+
+gridByCount = []
+
+X = 0
+Y = 1
+
+renderTypes = {
+    "Full": 0,
+    "Difference": 1,
+}
+
+def takeScreenshot(filename):
+    if screenshottingState == 0:
+        im = ImageGrab.grab()
+        im.save(str(filename))
+    elif screenshottingState == 1:
+        os.system("grimblast --freeze save output "+str(filename))
+    elif screenshottingState == 2:
+        pyautogui.screenshot(str(filename))
+    else:
+        print("ERROR - invalid config 'screenshottingState'!\nClosing due to not being able to save renders.")
+        os._exit(0)
+
+def start():
+    print("Setup complete!")
+    time.sleep(intermission)
+    print("Playing!")
+
+    global gridByCount
+    gridByCount = doMath.gridMath(topLeft, topRight, bottomLeft, bottomRight)[0]
+
+    frames = os.listdir(input_folder)
+
+    lastData = []
+    currentData = []
+    count = 0
+
+    while count < len(frames):
+        currentData, currentImage = scanImage(str(count)+".jpg")
+        if lastData == []:
+            # is first frame
+            renderFrame(renderTypes["Full"], currentData, currentImage, lastData)
+
+
+        lastData = currentData
+        count+=1
+    
+    print("Rendering complete!")
+    os._exit(0)
+
+def renderFrame(renderType, currentdata, currentImage, lastdata):
+    if renderType == renderTypes["Full"]:
+        buildTool()
+        print(currentdata)
+        pyautogui.PAUSE = placespeed
+        global gridByCount
+        count = 0
+        drawn = 0
+        for switch in currentdata:
+            print(str(count)+' / '+str(len(currentdata))+' pixels checked!', end='\r')
+            if switch == 0:
+                pos = gridByCount[count]
+                pyautogui.moveTo(pos[0], pos[1])
+                pyautogui.click()
+                drawn += 1
+            count += 1
+        print("All "+str(count)+' pixels checked!\n'+str(drawn)+' pixels drawn! Frame complete!')
+        currentImage.close()
+
+
+def scanImage(fileName):
+    filePath = input_folder+"/"+fileName
+    img = Image.open(filePath, "r")
+    pixels = list(img.getdata())
+    return pixels, img
+
+def buildTool():
+    pyautogui.PAUSE = 0.02
+    pyautogui.press("1")
+    pyautogui.press("T")
+
+def removeTool():
+    pyautogui.PAUSE = 0.02
+    pyautogui.press("4")
+
+
+
+#      _             _ _
+#     (_) __ _ _ __ (_) |_ ___
+#     | |/ _` | '_ \| | __/ _ \
+#     | | (_| | | | | | ||  __/
+#     |_|\__, |_| |_|_|\__\___|
+#        |___/
+
+def getPoints():
+    # THIS WILL BE BROKEN ON WAYLAND
+    # WHEN VINEGAR STARTS PATCHING WINE 9.0
+    # AND WINE FORCES WAYLAND
+    # BE WARNED
+    # (i'll probably try find another library when that happens)
+    def on_click(x, y, button, pressed):
+        global clix
+        global topLeft
+        global topRight
+        global bottomLeft
+        global bottomRight
+        if button == mouse.Button.left:
+            if clix == 0:
+                topLeft = (x, y)
+                print("click on top right")
+            elif clix == 2:
+                topRight = (x, y)
+                print("click on bottom left")
+            elif clix == 4:
+                bottomLeft = (x, y)
+                print("click on bottom right")
+            elif clix == 6:
+                bottomRight = (x, y)
+                initted()
+        clix += 1
+
+    def on_press(key):
+        if key == keyboard.Key.esc:
+            print("ESC pressed! Exitting...")
+            os._exit(0)
+
+    def initted():
+        start()
+
+    with mouse.Listener(on_click=on_click) as listener:
+        with keyboard.Listener(on_press=on_press) as listener:
+            listener.join()
+
+def checkConfig():
+    error = []
+    stop = False
+    print("Checking User Config...")
+
+    none = "VALID"
+
+    if screenshottingState > 2 or screenshottingState < 0:
+        error.insert(1, "INVALID - out of range")
+        stop = True
+    else:
+        error.insert(1, none)
+    
+    if intermission < 0:
+        error.insert(2, "INVALID - out of range")
+        stop = True
+    else:
+        error.insert(2, none)
+
+    if os.path.isdir(output_folder):
+        error.insert(3, none)
+    else:
+        error.insert(3, "INVALID - directory not found")
+        stop = True
+
+    if os.path.isdir(input_folder):
+        error.insert(4, none)
+    else:
+        error.insert(4, "INVALID - directory not found")
+        stop = True
+
+    if screenshottingState > 1 or screenshottingState < 0:
+        error.insert(5, "INVALID - out of range")
+        stop = True
+    else:
+        error.insert(5, none)
+
+    # Output results
+    print(
+        "screenshottingState -> "+error[0],
+        "\nintermission -> "+error[1],
+        "\noutput_folder -> "+error[2],
+        "\ninput_folder -> "+error[3],
+        "\nswitch -> "+error[4]
+        )
+    return stop
+
+invalidConfig = checkConfig()
+if gui:
+    if invalidConfig:
+        pyautogui.alert("Invalid config.")
+    else:
+        play = pyautogui.confirm('Proceed with playing "Bad Apple"?', buttons=["Yes", "No"])
+        if play == "Yes":
+            a = pyautogui.alert("Please select the 4 corners.")
+            if a == "OK":
+                getPoints()
+else:
+    if invalidConfig:
+        print("Invalid config.")
+    else:
+        getPoints()

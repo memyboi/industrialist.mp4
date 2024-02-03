@@ -1,0 +1,57 @@
+# yes i'm offloading math to other modules - thats how "organised" i wanna be (jk im never organised)
+
+# do not refer to my bad coding to an example, could be useful tho 
+
+# this python script gets all of the points in a trapezium - useful for 3d shit
+# like i wonder where this is used.... hmmm....
+# can u tell im bored?
+# definetly not procrastinating doing columns rn
+# help me :((
+
+import sys
+import os
+import math
+
+gridSize = (32, 24)
+
+def gridMath(topLeft, topRight, bottomLeft, bottomRight):
+    # make a grid from the coordinates, it is a trapezium.
+    # indexed by count
+    finalGrid = []
+    # do funny math stuff here
+
+    def makeEntry(pos): # organise structure so i remeber
+        finalGrid.append((pos))
+
+    leftError = topLeft[0] - bottomLeft[0]
+    rightError = bottomRight[0] - topRight[0]
+    topError = topLeft[1] - topRight[1]
+    bottomError = bottomRight[1] - bottomLeft[1]
+
+    leftMidpoint = ((topLeft[0]+bottomLeft[0])/2, (topLeft[1]+bottomLeft[1])/2)
+    rightMidpoint = ((topRight[0]+bottomRight[0])/2, (topRight[1]+bottomRight[1])/2)
+    topMidpoint = ((topLeft[0]+topRight[0])/2, (topLeft[1] + topRight[1])/2)
+    bottomMidpoint = ((bottomLeft[0]+bottomRight[0])/2, (bottomLeft[1] + bottomRight[1])/2)
+
+    def convertCountToLeftness(count, row):
+        return int(row * (leftError/gridSize[1]))
+    
+    def convertCountToDownness(count, column):
+        return int(column * (topError/gridSize[0]))
+
+    for count in range(gridSize[0]*gridSize[1]):
+        row = math.floor(count/gridSize[0])
+        column = count % gridSize[0]
+        rowStartX = topLeft[0] - (leftError*(row/gridSize[1]))
+        rowEndX = topRight[0] + (rightError*(row/gridSize[1]))
+        rowLength = rowEndX-rowStartX
+        columnStartY = topLeft[1] - (topError*(column/gridSize[0]))
+        columnEndY = bottomLeft[1] + (bottomError*(column/gridSize[0]))
+        columnLength = columnEndY - columnStartY
+        pos = (topLeft[0]-convertCountToLeftness(count, row)+((column/gridSize[0])*rowLength), (topLeft[1]-convertCountToDownness(count, column)) + (columnLength*(row/gridSize[1])))
+        makeEntry(pos)
+
+    debug = [leftError, rightError, leftMidpoint, rightMidpoint, topMidpoint, bottomMidpoint]
+
+    return (finalGrid, debug)
+
