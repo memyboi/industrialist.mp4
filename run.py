@@ -175,7 +175,6 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             pos = gridByCount[index]
 
             if int(dpL) >= 255/2 and int(dpC) <= 255/2:
-                removeTool()
                 pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
                 pyautogui.click()
