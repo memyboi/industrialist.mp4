@@ -1,9 +1,15 @@
 import sys
 import os
 import math
+import cv2
+import numpy
 from pynput import mouse
 from pynput import keyboard
 import pyautogui
+import time
+
+# clearFrame() wasn't working lol
+# had to debug *somehow*
 
 sys.path.append("./real-hacks")
 import doMath
@@ -11,40 +17,56 @@ import doMath
 gridByCount = []
 
 pyautogui.PAUSE = 0.020
+pyautogui.FAILSAFE = False
 
 clix = 0
 topLeft, topRight, bottomLeft, bottomRight = [], [], [], []
+
+def removeTool():
+    pyautogui.PAUSE = 0.02
+    pyautogui.press("4")
+
+#def clearFrame():
+#    removeTool()
+#    pyautogui.PAUSE = 0.2
+#    pyautogui.move(topLeft[0]+3, topLeft[1]+3)
+#    pyautogui.doubleClick()
+#    time.sleep(0.025)
+#    pyautogui.mouseDown()
+#    pyautogui.move(bottomRight[0]-3, bottomRight[1]-3)
+#    pyautogui.mouseUp()
+#    time.sleep(1)
+
+def clearFrame():
+    removeTool()
+    pyautogui.PAUSE = 0.1
+    pyautogui.moveTo(topLeft[0]+3, topLeft[1]+3)
+    pyautogui.mouseDown()
+    pyautogui.moveTo(bottomRight[0]-3, bottomRight[1]-3)
+    pyautogui.mouseUp()
+    pyautogui.press("#");
+    pyautogui.press("right");
+    pyautogui.press("right");
+    pyautogui.press("enter");
+    pyautogui.press("#");
 
 def start():
     global gridByCount
     gridByCount = doMath.gridMath(topLeft, topRight, bottomLeft, bottomRight)[0]
     print(gridByCount)
-    pyautogui.press("1")
-    pyautogui.press("T")
-    for pos in gridByCount:
-        print("place")
-        pyautogui.moveTo(pos[0], pos[1])
-        pyautogui.click()
-    os.system("hyprshot -m output -c -o ./ -f positioningtest.png")
+    clearFrame()
+    os.system("hyprshot -m output -c -o ./ -f cleartest.png")
     #pyautogui.screenshot("./positioning.png")
     maths = doMath.gridMath(topLeft, topRight, bottomLeft, bottomRight)
     grid = maths[0]
     debug = maths[1]
     print(debug)
-    img = cv2.imread("./positioningtest.png")
-    cv2.line(img, (topLeft[0], topLeft[1]), (bottomLeft[0], bottomLeft[1]), (0, 255, 0), thickness=2)
-    cv2.line(img, (topLeft[0], topLeft[1]), (topRight[0], topRight[1]), (0, 255, 0), thickness=2)
-    cv2.line(img, (bottomRight[0], bottomRight[1]), (topRight[0], topRight[1]), (0, 255, 0), thickness=2) 
-    cv2.line(img, (bottomLeft[0], bottomLeft[1]), (bottomRight[0], bottomRight[1]), (0, 255, 0), thickness=2) 
+    img = cv2.imread("./cleartest.png")
+    cv2.line(img, (topLeft[0]+3, topLeft[1]+3), (bottomRight[0]-3, bottomRight[1]-3), (0, 255, 0), thickness=2)
     #res = calcPositions()
-    img = cv2.circle(img, (int(debug[2][0]), int(debug[2][1])), 3, (0, 255, 255), 1)
-    img = cv2.circle(img, (int(debug[3][0]), int(debug[3][1])), 3, (0, 255, 255), 1)
-    img = cv2.circle(img, (int(debug[4][0]), int(debug[4][1])), 3, (0, 255, 255), 1)
-    img = cv2.circle(img, (int(debug[5][0]), int(debug[5][1])), 3, (0, 255, 255), 1)
-    for point in grid:
-        #print(point)
-        img = cv2.circle(img, (int(point[0]), int(point[1])), 3, (0, 0, 255), 1)
-    cv2.imwrite("./positioningtest.png", img)
+    img = cv2.circle(img, (topLeft[0]+3, topLeft[1]+3), 3, (0, 255, 255), 1)
+    img = cv2.circle(img, (bottomRight[0]-3, bottomRight[1]-3), 3, (0, 255, 255), 1)
+    cv2.imwrite("./cleartest.png", img)
 
 def on_press(key):
     if key == keyboard.Key.esc:

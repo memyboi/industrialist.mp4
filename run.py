@@ -24,6 +24,7 @@ import os
 import sys
 from pynput import mouse
 from pynput import keyboard
+from tkinter import messagebox
 import time
 from PIL import Image
 import cv2
@@ -47,9 +48,11 @@ massremovepadding = 3 # how much padding to add to the mass delete feature
 output_folder = "./rendered" # where the images are placed after being rendered, may need changing on non unix (windows) platforms
 input_folder = "./processed" # input files, make sure it only consists of .jpg files numbered from 0-${frame count}, may need changing on non unix (windows) platforms
 intermission = 0 # number of seconds before playing starts, after initialisation.
-switch = 0
-    # 0 - place pipe when pixel is black, leave white pixels
-    # 1 - place pipe when pixel is white, leave black pixels
+switch = 1 # set to 1 by default cuz i recommend using white pipes
+    # 0 - place pipe when pixel is black, leave white pixels alone
+    # 1 - place pipe when pixel is white, leave black pixels alone
+
+pyautogui.FAILSAFE = False
 
 #                       _   _
 #      _ __ _   _ _ __ | |_(_)_ __ ___   ___
@@ -147,7 +150,18 @@ def removeTool():
     pyautogui.PAUSE = 0.02
     pyautogui.press("4")
 
-
+def clearFrame(): # le efficiante
+    removeTool()
+    pyautogui.PAUSE = 0.1
+    pyautogui.moveTo(topLeft[0]+3, topLeft[1]+3)
+    pyautogui.mouseDown()
+    pyautogui.moveTo(bottomRight[0]-3, bottomRight[1]-3)
+    pyautogui.mouseUp()
+    pyautogui.press("#");
+    pyautogui.press("right");
+    pyautogui.press("right");
+    pyautogui.press("enter");
+    pyautogui.press("#");
 
 #      _             _ _
 #     (_) __ _ _ __ (_) |_ ___
@@ -180,16 +194,43 @@ def getPoints():
                 print("click on bottom right")
             elif clix == 6:
                 bottomRight = (x, y)
-                initted()
+                testfill()
         clix += 1
+
+    def testfill():
+        # render a full frame with all pipes, as output to user.
+        if gui: messagebox.showinfo('run.py', 'Callibration check will begin.')
+        global gridByCount
+        gridByCount = doMath.gridMath(topLeft, topRight, bottomLeft, bottomRight)[0]
+        clearFrame()
+        buildTool()
+        pyautogui.PAUSE = placespeed
+        for pos in gridByCount:
+            pyautogui.moveTo(pos[0], pos[1])
+            pyautogui.click()
+        
+        if gui:
+            # ask user if callibrated correctly, if not, loop back to getPoints()
+            time.sleep(1)
+            callibrated = messagebox.askquestion('run.py', 'Was that properly callibrated?')
+            if callibrated == "yes":
+                messagebox.showinfo('run.py', 'Press OK to start.')
+                clearFrame()
+                start()
+            else:
+                messagebox.showinfo('run.py', 'Please select the 4 corners. Be as PRECISE as physically possible.')
+                clearFrame()
+                getPoints()
+        else:
+            # wait 10 seconds to give usr time to check callibration
+            # idk why im doing comments im bored ok?
+            time.sleep(10)
+            start()
 
     def on_press(key):
         if key == keyboard.Key.esc:
             print("ESC pressed! Exitting...")
             os._exit(0)
-
-    def initted():
-        start()
 
     with mouse.Listener(on_click=on_click) as listener:
         with keyboard.Listener(on_press=on_press) as listener:
@@ -245,13 +286,14 @@ def checkConfig():
 invalidConfig = checkConfig()
 if gui:
     if invalidConfig:
-        pyautogui.alert("Invalid config.")
+        messagebox.showinfo('run.py', 'Invalid config.')
     else:
-        play = pyautogui.confirm('Proceed with playing "Bad Apple"?', buttons=["Yes", "No"])
-        if play == "Yes":
-            a = pyautogui.alert("Please select the 4 corners.")
-            if a == "OK":
-                getPoints()
+        #play = pyautogui.confirm('Proceed with playing "Bad Apple"?', buttons=["Yes", "No"])
+        #if play == "Yes":
+        play = messagebox.askquestion('run.py', f'Proceed with rendering all of {input_folder}?')
+        if play == "yes":
+            messagebox.showinfo('run.py', 'Please select the 4 corners. Be as PRECISE as physically possible.')
+            getPoints()
 else:
     if invalidConfig:
         print("Invalid config.")

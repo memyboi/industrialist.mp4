@@ -48,7 +48,7 @@ def gridMath(topLeft, topRight, bottomLeft, bottomRight):
         columnStartY = topLeft[1] - (topError*(column/gridSize[0]))
         columnEndY = bottomLeft[1] + (bottomError*(column/gridSize[0]))
         columnLength = columnEndY - columnStartY
-        pos = (topLeft[0]-convertCountToLeftness(count, row) + ((column/gridSize[0])*(rowLength+(rowLength/gridSize[0]))), (topLeft[1]-convertCountToDownness(count, column)) + (((columnLength+(columnLength/gridSize[1]))*(row/gridSize[1]))))
+        pos = (topLeft[0]-convertCountToLeftness(count, row) + ((column/gridSize[0])*(rowLength+(rowLength/gridSize[0]))), (topLeft[1]-convertCountToDownness(count, column)) + (((columnLength+(columnLength/gridSize[1])/2)*(row/gridSize[1]))))
         makeEntry(pos)
 
     debug = [leftError, rightError, leftMidpoint, rightMidpoint, topMidpoint, bottomMidpoint]
