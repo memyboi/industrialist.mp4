@@ -50,7 +50,7 @@ screenshottingState = 0
     # 1 - use grimblast (linux wayland, grimblast needs to be installed),
     # 2 - use pyautogui.screenshot(linux (x11 only), osx, windows)
 gui = True # enable/disable gui
-placespeed = 0.020 # how fast pipes are placed
+placespeed = 0.030 # how fast pipes are placed
 massremovepadding = 3 # how much padding to add to the mass delete feature
 diffthreshold = 50 # the percentage of similarities needed to use difference rendering.
     # 0 (or below) would mean all renders but the first are diff renders
@@ -156,10 +156,9 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
         buildTool()
         pyautogui.PAUSE = placespeed
         index = 0
-        for bit in currentdata:
+        for pos in gridByCount:
             dpL = lastdata[index]
             dpC = currentdata[index]
-            pos = gridByCount[index]
 
             if int(dpL) <= 255/2 and int(dpC) >= 255/2:
                 pyautogui.moveTo(pos[0], pos[1])
@@ -167,12 +166,13 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
 
             index+=1
 
+        time.sleep(0.25)
+
         removeTool()
         index = 0
-        for bit in currentdata:
+        for pos in gridByCount:
             dpL = lastdata[index]
             dpC = currentdata[index]
-            pos = gridByCount[index]
 
             if int(dpL) >= 255/2 and int(dpC) <= 255/2:
                 pyautogui.moveTo(pos[0], pos[1])
