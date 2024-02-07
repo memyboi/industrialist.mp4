@@ -144,7 +144,7 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
         drawn = 0
         for bit in currentdata:
             print(str(count)+' / '+str(len(currentdata))+' pixels checked!', end='\r')
-            if bit == switch:
+            if int(bit) == switch*255:
                 pos = gridByCount[count]
                 pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
@@ -163,7 +163,6 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             if int(dpL) == 0 and int(dpC) >= 1:
                 pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
-                print(pos)
 
             index+=1
 
@@ -176,8 +175,8 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             if int(dpL) >= 1 and int(dpC) == 0:
                 removeTool()
                 pyautogui.moveTo(pos[0], pos[1])
-                pyautogui.doubleClick()
-                print("rem")
+                pyautogui.click()
+                pyautogui.click()
 
             index+=1
 
@@ -204,7 +203,7 @@ def depictRenderType(lastData, currentData):
             return renderTypes["Full"]
     else:
         print("Error! Invalid data size, continuing..")
-        return renderTypes["Difference"]
+        return renderTypes["Full"]
 
 def scanImage(fileName):
     filePath = input_folder+"/"+fileName
