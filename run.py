@@ -156,9 +156,10 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
         buildTool()
         pyautogui.PAUSE = placespeed
         index = 0
-        for pos in gridByCount:
+        for bit in currentdata:
             dpL = lastdata[index]
             dpC = currentdata[index]
+            pos = gridByCount[index]
 
             if int(dpL) == 0 and int(dpC) >= 1:
                 pyautogui.moveTo(pos[0], pos[1])
@@ -168,9 +169,10 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
 
         removeTool()
         index = 0
-        for pos in gridByCount:
+        for bit in currentdata:
             dpL = lastdata[index]
             dpC = currentdata[index]
+            pos = gridByCount[index]
 
             if int(dpL) >= 1 and int(dpC) == 0:
                 removeTool()
