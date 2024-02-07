@@ -128,12 +128,13 @@ def start():
     os._exit(0)
 
 def renderFrame(renderType, currentdata, currentImage, lastdata):
+    global gridByCount
+    global switch
     if renderType == renderTypes["Full"]:
         clearFrame()
         buildTool()
         pyautogui.PAUSE = placespeed
-        global gridByCount
-        global switch
+
         count = 0
         drawn = 0
         for bit in currentdata:
@@ -149,8 +150,6 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
     elif renderType == renderTypes["Difference"]:
         buildTool()
         pyautogui.PAUSE = placespeed
-        global gridByCount
-        global switch
 
         removeTool()
 
