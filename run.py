@@ -1,9 +1,9 @@
-# do le macro
+# do les macrolession
 # made in late jan 2024, whereas other files made in late november 2023
 # dont ask why i took so long
 # thats also why this code is "cleaner"
 
-# might work on windows, 
+# might work on windows, if not, oh well its just a silly script anyway
 # its made to work on linux (on wayland)
 # cuz thats the os i use lol
 # i use arch btw
@@ -11,6 +11,11 @@
 
 # this is awful code lmao
 # do not use this at all
+# in gen alpha terms:
+# the ohio skibidi toilet sigmas do not grimace this gyatted code
+# (what the fuck did i just write)
+
+# these comments are proof that i need serious therapy
 
 #      _                            _
 #     (_)_ __ ___  _ __   ___  _ __| |_ ___
@@ -30,7 +35,7 @@ from PIL import Image
 import cv2
 import math
 sys.path.append("./real-hacks") # hax omg !11! cheetah !11!1!!1
-import doMath # jk its just math
+import doMath # jk its just math (math jumpscare)
 
 #                       __ _
 #       ___ ___  _ __  / _(_) __ _
@@ -45,6 +50,9 @@ screenshottingState = 0
 gui = True # enable/disable gui
 placespeed = 0.020 # how fast pipes are placed
 massremovepadding = 3 # how much padding to add to the mass delete feature
+diffthreshold = 50 # the percentage of similarities needed to use difference rendering.
+    # 0 (or below) would mean all renders but the first are diff renders
+    # 100 (or above) would mean all renders are full renders.
 output_folder = "./rendered" # where the images are placed after being rendered, may need changing on non unix (windows) platforms
 input_folder = "./processed" # input files, make sure it only consists of .jpg files numbered from 0-${frame count}, may need changing on non unix (windows) platforms
 intermission = 0 # number of seconds before playing starts, after initialisation.
@@ -79,11 +87,11 @@ renderTypes = {
 def takeScreenshot(filename):
     if screenshottingState == 0:
         im = ImageGrab.grab()
-        im.save(str(filename))
+        im.save(output_folder+"/"+str(filename))
     elif screenshottingState == 1:
-        os.system("grimblast --freeze save output "+str(filename))
+        os.system("grimblast --freeze save output "+output_folder+"/"+str(filename))
     elif screenshottingState == 2:
-        pyautogui.screenshot(str(filename))
+        pyautogui.screenshot(output_folder+"/"+str(filename))
     else:
         print("ERROR - invalid config 'screenshottingState'!\nClosing due to not being able to save renders.")
         os._exit(0)
@@ -107,8 +115,12 @@ def start():
         if lastData == []:
             # is first frame
             renderFrame(renderTypes["Full"], currentData, currentImage, lastData)
+        elif lastData != currentData:
+            # is not equal frame, perform other operations
+            renderFrame(depictRenderType(lastData, currentData), currentData, currentImage, lastData)
+        # if is equal frame, will skip all other rendering attempts and just take a screenshot.
 
-
+        takeScreenshot(str(count)+".jpg")
         lastData = currentData
         count+=1
     
@@ -117,15 +129,16 @@ def start():
 
 def renderFrame(renderType, currentdata, currentImage, lastdata):
     if renderType == renderTypes["Full"]:
+        clearFrame()
         buildTool()
-        print(currentdata)
         pyautogui.PAUSE = placespeed
         global gridByCount
+        global switch
         count = 0
         drawn = 0
-        for switch in currentdata:
+        for bit in currentdata:
             print(str(count)+' / '+str(len(currentdata))+' pixels checked!', end='\r')
-            if switch == 0:
+            if bit == switch:
                 pos = gridByCount[count]
                 pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
@@ -133,7 +146,63 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             count += 1
         print("All "+str(count)+' pixels checked!\n'+str(drawn)+' pixels drawn! Frame complete!')
         currentImage.close()
+    elif renderType == renderTypes["Difference"]:
+        buildTool()
+        pyautogui.PAUSE = placespeed
+        global gridByCount
+        global switch
 
+        removeTool()
+
+        #remove pixels
+        index = 0
+        for dpC in currentdata:
+            dpL = lastdata[index]
+            if dpl == 1 and dpC == 0:
+                pos = gridByCount[index]
+                pyautogui.moveTo(pos[0], pos[1])
+                pyautogui.click()
+                pyautogui.click()
+
+            index += 1
+
+        buildTool()
+
+        #add pixels
+        index = 0
+        for dpC in currentdata:
+            dpL = lastdata[index]
+            if dpl == 0 and dpC == 1:
+                pos = gridByCount[index]
+                pyautogui.moveTo(pos[0], pos[1])
+                pyautogui.click()
+
+            index += 1
+
+
+def depictRenderType(lastData, currentData):
+    # assuming both datas have same data count.
+    if len(lastData) == len(currentData):
+        # both datas have same data count
+        similars = 0
+        index = 0
+        for dpC in currentData:
+            dpL = lastData[index]
+            if dpC == dpL: similars+=1
+
+            index+=1
+        
+        diffs = len(currentData)-similars
+        samePercent = (similars/diffs)*100
+        if samePercent > diffthreshold:
+            # use difference rendering, full will take too long.
+            return renderTypes["Difference"]
+        else:
+            # use full rendering, difference will take too long.
+            return renderTypes["Full"]
+    else:
+        print("Error! Invalid data size, continuing..")
+        return renderTypes["Difference"]
 
 def scanImage(fileName):
     filePath = input_folder+"/"+fileName
@@ -154,6 +223,8 @@ def clearFrame(): # le efficiante
     removeTool()
     pyautogui.PAUSE = 0.1
     pyautogui.moveTo(topLeft[0]+3, topLeft[1]+3)
+    pyautogui.click()
+    pyautogui.click()
     pyautogui.mouseDown()
     pyautogui.moveTo(bottomRight[0]-3, bottomRight[1]-3)
     pyautogui.mouseUp()
