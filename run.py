@@ -161,7 +161,7 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             dpC = currentdata[index]
             pos = gridByCount[index]
 
-            if int(dpL) == 0 and int(dpC) >= 1:
+            if int(dpL) <= 255/2 and int(dpC) >= 255/2:
                 pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
 
@@ -174,7 +174,7 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             dpC = currentdata[index]
             pos = gridByCount[index]
 
-            if int(dpL) >= 1 and int(dpC) == 0:
+            if int(dpL) >= 255/2 and int(dpC) <= 255/2:
                 removeTool()
                 pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
