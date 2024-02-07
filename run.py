@@ -160,12 +160,10 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
             dpL = lastdata[index]
             dpC = currentdata[index]
 
-            print(dpL, dpC)
-
             if int(dpL) == 0 and int(dpC) >= 1:
-                pyautogui.move(pos[0], pos[1])
+                pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.click()
-                print("build")
+                print(pos)
 
             index+=1
 
@@ -177,7 +175,7 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
 
             if int(dpL) >= 1 and int(dpC) == 0:
                 removeTool()
-                pyautogui.move(pos[0], pos[1])
+                pyautogui.moveTo(pos[0], pos[1])
                 pyautogui.doubleClick()
                 print("rem")
 
