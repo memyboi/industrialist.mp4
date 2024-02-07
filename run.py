@@ -17,6 +17,8 @@
 
 # these comments are proof that i need serious therapy
 
+# UI Navigation toggle needs to be on for this to work btw
+
 #      _                            _
 #     (_)_ __ ___  _ __   ___  _ __| |_ ___
 #     | | '_ ` _ \| '_ \ / _ \| '__| __/ __|
@@ -24,7 +26,7 @@
 #     |_|_| |_| |_| .__/ \___/|_|   \__|___/
 #                 |_|
 import pyautogui
-import pyscreenshot
+import pyscreenshot as ImageGrab
 import os
 import sys
 from pynput import mouse
@@ -88,10 +90,13 @@ def takeScreenshot(filename):
     if screenshottingState == 0:
         im = ImageGrab.grab()
         im.save(output_folder+"/"+str(filename))
+        print("Screenshot taken with pyscreenshot, saved to "+output_folder+"/"+str(filename)+".")
     elif screenshottingState == 1:
         os.system("grimblast --freeze save output "+output_folder+"/"+str(filename))
+        print("Screenshot taken with grimblast, saved to "+output_folder+"/"+str(filename)+".")
     elif screenshottingState == 2:
         pyautogui.screenshot(output_folder+"/"+str(filename))
+        print("Screenshot taken with pyautogui, saved to "+output_folder+"/"+str(filename)+".")
     else:
         print("ERROR - invalid config 'screenshottingState'!\nClosing due to not being able to save renders.")
         os._exit(0)
@@ -150,33 +155,33 @@ def renderFrame(renderType, currentdata, currentImage, lastdata):
     elif renderType == renderTypes["Difference"]:
         buildTool()
         pyautogui.PAUSE = placespeed
+        index = 0
+        for pos in gridByCount:
+            dpL = lastdata[index]
+            dpC = currentdata[index]
+
+            print(dpL, dpC)
+
+            if int(dpL) == 0 and int(dpC) >= 1:
+                pyautogui.move(pos[0], pos[1])
+                pyautogui.click()
+                print("build")
+
+            index+=1
 
         removeTool()
-
-        #remove pixels
         index = 0
-        for dpC in currentdata:
+        for pos in gridByCount:
             dpL = lastdata[index]
-            if dpl == 1 and dpC == 0:
-                pos = gridByCount[index]
-                pyautogui.moveTo(pos[0], pos[1])
-                pyautogui.click()
-                pyautogui.click()
+            dpC = currentdata[index]
 
-            index += 1
+            if int(dpL) >= 1 and int(dpC) == 0:
+                removeTool()
+                pyautogui.move(pos[0], pos[1])
+                pyautogui.doubleClick()
+                print("rem")
 
-        buildTool()
-
-        #add pixels
-        index = 0
-        for dpC in currentdata:
-            dpL = lastdata[index]
-            if dpl == 0 and dpC == 1:
-                pos = gridByCount[index]
-                pyautogui.moveTo(pos[0], pos[1])
-                pyautogui.click()
-
-            index += 1
+            index+=1
 
 
 def depictRenderType(lastData, currentData):
@@ -227,11 +232,13 @@ def clearFrame(): # le efficiante
     pyautogui.mouseDown()
     pyautogui.moveTo(bottomRight[0]-3, bottomRight[1]-3)
     pyautogui.mouseUp()
+    time.sleep(0.2)
     pyautogui.press("#");
     pyautogui.press("right");
     pyautogui.press("right");
     pyautogui.press("enter");
     pyautogui.press("#");
+    time.sleep(2)
 
 #      _             _ _
 #     (_) __ _ _ __ (_) |_ ___
@@ -290,6 +297,7 @@ def getPoints():
             else:
                 messagebox.showinfo('run.py', 'Please select the 4 corners. Be as PRECISE as physically possible.')
                 clearFrame()
+                clix = 0
                 getPoints()
         else:
             # wait 10 seconds to give usr time to check callibration
